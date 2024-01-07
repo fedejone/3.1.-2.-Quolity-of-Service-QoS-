@@ -141,7 +141,7 @@ module stream_arbiter_latency_0 #(
   end
 
   always_comb begin
-    if ( state == IDLE && s_valid_i ) begin
+    if ( state == IDLE ) begin
       s_ready_o = '0;
     end else if ( m_ready_i ) begin
       if ( select_stream_reg && state == DATA )
@@ -151,7 +151,7 @@ module stream_arbiter_latency_0 #(
     end else if ( ~m_ready_i ) begin
       s_ready_o = '0;
     end else begin
-      s_ready_o = '1;
+      s_ready_o = '0;
     end
   end
 
