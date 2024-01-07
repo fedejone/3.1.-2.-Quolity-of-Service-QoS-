@@ -58,7 +58,7 @@ module stream_arbiter_latency_1 #(
       m_id_o            <= '0;
       m_last_o          <= '0;
       m_valid_o         <= '0;
-      s_ready_o         <= '1;
+      s_ready_o         <= '0;
       cnt_rr            <= '0;
       rr_reg            <= '0;
       state             <= IDLE;
