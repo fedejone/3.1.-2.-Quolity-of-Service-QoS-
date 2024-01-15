@@ -7,7 +7,7 @@ module stream_arbiter_top #(
 ) (
   input                     clk_i                      , // Clock
   input                     rst_n                      ,
-  // input streams
+  // input streams  
   input  [T_DATA_WIDTH-1:0] s_data_i [STREAM_COUNT-1:0],
   input  [T_QOS__WIDTH-1:0] s_qos_i  [STREAM_COUNT-1:0],
   input  [STREAM_COUNT-1:0] s_last_i                   ,
@@ -22,30 +22,7 @@ module stream_arbiter_top #(
   input                     m_ready_i
 );
 
-generate
-  if (LATENCY_SLAVE == 1) begin
 
-    stream_arbiter_latency_0 #(
-      .T_DATA_WIDTH(T_DATA_WIDTH),
-      .T_QOS__WIDTH(T_QOS__WIDTH),
-      .STREAM_COUNT(STREAM_COUNT)
-    ) uut_stream_arbiter_0 (
-      .clk_i    (clk_i    ),
-      .rst_n    (rst_n    ),
-      .s_data_i (s_data_i ),
-      .s_qos_i  (s_qos_i  ),
-      .s_last_i (s_last_i ),
-      .s_valid_i(s_valid_i),
-      .s_ready_o(s_ready_o),
-      .m_data_o (m_data_o ),
-      .m_qos_o  (m_qos_o  ),
-      .m_id_o   (m_id_o   ),
-      .m_last_o (m_last_o ),
-      .m_valid_o(m_valid_o),
-      .m_ready_i(m_ready_i)
-    );
-
-  end else begin
     stream_arbiter_latency_1 #(
       .T_DATA_WIDTH(T_DATA_WIDTH),
       .T_QOS__WIDTH(T_QOS__WIDTH),
@@ -65,8 +42,7 @@ generate
       .m_valid_o(m_valid_o),
       .m_ready_i(m_ready_i)
     );
-  end
-  endgenerate
+ 
 
   
 
