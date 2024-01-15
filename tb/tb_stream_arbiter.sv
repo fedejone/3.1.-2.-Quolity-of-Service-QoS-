@@ -4,7 +4,7 @@ parameter T_DATA_WIDTH  = 8                   ;
 parameter T_QOS__WIDTH  = 4                   ;
 parameter STREAM_COUNT  = 2                   ;
 parameter T_ID___WIDTH  = $clog2(STREAM_COUNT);
-parameter LATENCY_SLAVE = 1                   ;
+parameter LATENCY_SLAVE = 0                   ;
 
 module tb_stream_arbiter ();
   logic                    clk_i                      ; // Clock
@@ -22,30 +22,7 @@ module tb_stream_arbiter ();
   logic                    m_valid_o;
   logic                    m_ready_i;
 
-  generate
-    if (LATENCY_SLAVE == 1) begin  // смена режимов слейва
-
-      stream_arbiter_latency_0 #(
-        .T_DATA_WIDTH(T_DATA_WIDTH),
-        .T_QOS__WIDTH(T_QOS__WIDTH),
-        .STREAM_COUNT(STREAM_COUNT)
-      ) uut_stream_arbiter (
-        .clk_i    (clk_i    ),
-        .rst_n    (rst_n    ),
-        .s_data_i (s_data_i ),
-        .s_qos_i  (s_qos_i  ),
-        .s_last_i (s_last_i ),
-        .s_valid_i(s_valid_i),
-        .s_ready_o(s_ready_o),
-        .m_data_o (m_data_o ),
-        .m_qos_o  (m_qos_o  ),
-        .m_id_o   (m_id_o   ),
-        .m_last_o (m_last_o ),
-        .m_valid_o(m_valid_o),
-        .m_ready_i(m_ready_i)
-      );
-
-    end else begin
+  
       stream_arbiter_latency_1 #(
         .T_DATA_WIDTH(T_DATA_WIDTH),
         .T_QOS__WIDTH(T_QOS__WIDTH),
@@ -65,15 +42,17 @@ module tb_stream_arbiter ();
         .m_valid_o(m_valid_o),
         .m_ready_i(m_ready_i)
       );
-    end
-  endgenerate
 
   logic                    ready_delay_0;
   logic                    ready_delay_1;
   logic [             7:0] data_1       ;
   logic [             7:0] data_2       ;
+  logic [             7:0] data_3       ;
+  logic [             7:0] data_4       ;
   logic [T_QOS__WIDTH-1:0] qos_1        ;
   logic [T_QOS__WIDTH-1:0] qos_2        ;
+  logic [T_QOS__WIDTH-1:0] qos_3        ;
+  logic [T_QOS__WIDTH-1:0] qos_4        ;
 
   typedef struct {
     logic [T_DATA_WIDTH-1:0] sdata;
@@ -106,7 +85,7 @@ module tb_stream_arbiter ();
     wait_clk(1);
   end
 /*------------------------------------------------------------------------------
---  задавать значения
+--  значения сигналов значения
 ------------------------------------------------------------------------------*/
   initial begin
     wait(~rst_n);
@@ -114,24 +93,39 @@ module tb_stream_arbiter ();
     s_data_i[1] <= '0;
     s_qos_i[0] <= 1;
     s_qos_i[1] <= 2;
+    s_qos_i[2] <= 3;
+    s_qos_i[3] <= 4;
     s_last_i <= '0;
     s_valid_i <= '0;
-    s_last_i <= '0;
+    wait_clk(4);
+    s_valid_i = '1;
+    s_qos_i[0] <= 1;
+    s_qos_i[1] <= 0;
+    s_qos_i[2] <= 1;
+    s_qos_i[3] <= 1;
     wait(rst_n);
-    repeat(100) begin
+    repeat(200) begin
       @(posedge clk_i);
       s_valid_i = '1;
       if (s_ready_o !== 0) begin
         s_data_i[0] <= $urandom();
         s_data_i[1] <= $urandom();
-        s_last_i <= $urandom_range(0,2);
+        s_data_i[2] <= $urandom();
+        s_data_i[3] <= $urandom();
+        s_last_i[m_id_o] <= $urandom();
       end
       if (m_last_o) begin
-        s_qos_i[0] <= $urandom_range(2,15);
-        s_qos_i[1] <= $urandom_range(1,15);
+        // @(negedge clk_i)
+        s_qos_i[0] <=$urandom_range(0,15);
+        s_qos_i[1] <=$urandom_range(0,15);
+        s_qos_i[2] <=$urandom_range(0,15);
+        s_qos_i[3] <=$urandom_range(0,15);
+        wait_clk(2);
+        s_valid_i = '0;
       end
     end
     $stop();
+    m_ready_i = '0;
   end
 
   initial begin
@@ -187,5 +181,9 @@ initial begin   // проверка пакетов (работает не кор
   assign data_2 = s_data_i[1];
   assign qos_1  = s_qos_i[0];
   assign qos_2  = s_qos_i[1];
+  assign qos_3  = s_qos_i[2];
+  assign qos_4  = s_qos_i[3];
+  assign data_3 = s_data_i[2];
+  assign data_4 = s_data_i[3];
 
   endmodule
